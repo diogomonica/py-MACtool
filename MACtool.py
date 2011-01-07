@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 import random, platform, subprocess, sys, os,time
-	
+import getMAN
+
 def isLinux():
 	"""Verifies if the current platform is Linux"""
 	OS = platform.system()

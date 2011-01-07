@@ -25,7 +25,7 @@ def getMACfMAN(manufacturer,manfile=MANFILENAME):
 		try:
 			currentMAC = line.split()[0]
 			currentMAN = line.split()[1]
-			if manufacturer == currentMAN and len(currentMAC)<17:
+			if manufacturer == currentMAN and len(currentMAC)<17 and len(currentMAC) > 1:
 				outList.append(line.split()[0])
 		except IndexError:
 			pass
@@ -42,4 +42,9 @@ if __name__ == '__main__':
 	   
 	manufacturer = sys.argv[1]
 	
-	print getMACfMAN(manufacturer)
+	macs = getMACfMAN(manufacturer)
+	
+	if len(macs) > 0: 
+		print macs
+	else:
+		print "[-] Manufacturer: %s, not found." % manufacturer
