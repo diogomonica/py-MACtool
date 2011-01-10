@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-import random, platform, subprocess, sys, os,time
+import random, platform, subprocess, sys, os, time, getopt
 import getMAN
 
 def isLinux():
@@ -34,7 +34,7 @@ def randomMacAddress(prefix):
 
 def checkMac(device,mac):
 	"""Returns true if the current device mac address matches the mac given as input"""
-	local = ""        
+	local = ""		  
 	output = subprocess.Popen(["ifconfig", "%s" % device], stdout=subprocess.PIPE).communicate()[0]
 	index = output.find('ether') + len('ether ')
 	localAddr = output[index:index+17] 
@@ -44,39 +44,64 @@ def parsePrefix(prefix):
 	"""Parses user-define prefix, ex: de:ad:be:ef"""
 	tempList = []
 	prefList = prefix.split(":")
-	for pair in prefList:     
-		tempList.append(int(pair,16))
+	try:
+		for pair in prefList:	  
+			tempList.append(int(pair,16))
+	except:
+		print "[-] Unable to parse prefix %s. Correct format: 00:00:00" % prefix
+		sys.exit(2)
 	return tempList
 	
 def printUsage():
-	pass		
+	print "Usage: %s INTERFACE <-m MANUFACTURER> <-p PREFIX>" % sys.argv[0]
+	print "Example: %s eth0 -m Apple" % sys.argv[0]
+	print "Example: %s eth0 -p de:ad:be:ef" % sys.argv[0]
+			
 
 if __name__ == '__main__':
-	if len(sys.argv) < 2:
+	try:
+		opts, args = getopt.getopt(sys.argv[1:], 'm:p:')
+	except getopt.GetoptError, err:
+		print str(err) 
 		printUsage()
-		sys.exit(0)
-	   
-	device = sys.argv[1]
- 	
+		sys.exit(2)
+	
+	if len(args) < 1:
+		printUsage()
+		sys.exit(2)
+	
+	prefix = None
+	for o, a in opts:
+		if o in ("-m","--manufacturer"):
+			manu = getMAN.getMACfMAN(a)
+			if len(manu) == 0:
+				print "[-] Manufacturer: %s not found." % a
+			prefix = parsePrefix(random.choice(manu))
+		elif o in ("-p","--prefix"):
+			prefix = a
+			prefix = parsePrefix(a)
+			
+	if not prefix:
+		prefix = [0x00]	   
+	
+	device = args[0]
+	
 	if not isRoot():
 		print "[-] Your have to be root"
 		sys.exit(0)
-
-	try:
-		prefix = sys.argv[2]
-		prefix = parsePrefix(prefix)
-	except IndexError:
-		prefix = [0x00]
-    
+	
 	mac = randomMacAddress(prefix)
 	print "[*] Generated MAC address: %s for device %s" % (mac,device)
 
 	# Call the setMAC for either Linux or OSx
-	if isOSx():									 
-		setOSxMAC(device,mac)
-	elif isLinux():
-		setOSxMAC(device,mac)		   
-
+	try:
+		if isOSx():									 
+			setOSxMAC(device,mac)
+		elif isLinux():
+			setOSxMAC(device,mac)		   
+	except:
+		print "[-] Unable to set MAC for device: %s. Does this device exist?" % device
+		sys.exit(2)
 	# Verify if the interface has the new mac address set	
 	if checkMac(device,mac):
 		print "[*] Done"
