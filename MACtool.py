@@ -97,7 +97,7 @@ if __name__ == '__main__':
 		if isOSx():									 
 			setOSxMAC(device,mac)
 		elif isLinux():
-			setOSxMAC(device,mac)		   
+			setLinuxMAC(device,mac)		   
 	except:
 		print "[-] Unable to set MAC for device: %s. Does this device exist?" % device
 		sys.exit(2)
