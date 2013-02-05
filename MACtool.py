@@ -32,11 +32,18 @@ def randomMacAddress(prefix):
 		prefix.append(random.randint(0x00, 0x7f))
 	return ':'.join('%02x' % x for x in prefix)
 
-def checkMac(device,mac):
+def checkOSxMac(device,mac):
 	"""Returns true if the current device mac address matches the mac given as input"""
 	output = subprocess.Popen(["ifconfig", "%s" % device], stdout=subprocess.PIPE).communicate()[0]
 	index = output.find('ether') + len('ether ')
-	localAddr = output[index:index+17] 
+	localAddr = output[index:index+17].lower() 
+	return mac == localAddr 
+
+def checkLinuxMac(device,mac):
+	"""Returns true if the current device mac address matches the mac given as input"""
+	output = subprocess.Popen(["ifconfig", "%s" % device], stdout=subprocess.PIPE).communicate()[0]
+	index = output.find('HWaddr') + len('HWaddr ')
+	localAddr = output[index:index+17].lower() 
 	return mac == localAddr 
 
 def parsePrefix(prefix):
@@ -102,8 +109,15 @@ if __name__ == '__main__':
 		print "[-] Unable to set MAC for device: %s. Does this device exist?" % device
 		sys.exit(2)
 	# Verify if the interface has the new mac address set	
-	if checkMac(device,mac):
-		print "[*] Done"
-	else:
-		print "[-] Something went wrong"
+	if isOSx():
+	    if checkOSxMac(device,mac):
+		    print "[*] Done"
+	    else:
+		    print "[-] Something went wrong"
+	elif isLinuxx():
+	    if checkLinuxMac(device,mac):
+		    print "[*] Done"
+	    else:
+		    print "[-] Something went wrong"
+
 	
