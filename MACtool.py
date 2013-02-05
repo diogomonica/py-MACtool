@@ -114,7 +114,7 @@ if __name__ == '__main__':
 		    print "[*] Done"
 	    else:
 		    print "[-] Something went wrong"
-	elif isLinuxx():
+	elif isLinux():
 	    if checkLinuxMac(device,mac):
 		    print "[*] Done"
 	    else:
