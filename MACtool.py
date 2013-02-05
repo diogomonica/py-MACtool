@@ -34,7 +34,6 @@ def randomMacAddress(prefix):
 
 def checkMac(device,mac):
 	"""Returns true if the current device mac address matches the mac given as input"""
-	local = ""		  
 	output = subprocess.Popen(["ifconfig", "%s" % device], stdout=subprocess.PIPE).communicate()[0]
 	index = output.find('ether') + len('ether ')
 	localAddr = output[index:index+17] 
